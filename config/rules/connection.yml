@@ -1,0 +1,30 @@
+# Connection Alert Rules
+# Covers: connection failures, active connection counts
+
+groups:
+  - name: crdb_cloud_connections
+    rules:
+
+      - alert: CRDBCloudHighConnectionFailureRate
+        expr: rate(crdb_cloud_sql_conn_failures_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "High connection failure rate on {{ $labels.cluster }}"
+          description: >
+            {{ printf "%.2f" $value }} connection failures/sec on
+            {{ $labels.cluster }}. Check client configuration and pool settings.
+
+      - alert: CRDBCloudHighActiveConnections
+        expr: crdb_cloud_sql_conns > 800
+        for: 5m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "High active connection count on {{ $labels.cluster }}"
+          description: >
+            {{ $value }} active connections on {{ $labels.cluster }}.
+            Consider connection pooling (PgBouncer).

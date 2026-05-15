@@ -1,0 +1,53 @@
+# CockroachDB Cloud — Prometheus Configuration
+# Replace all values marked with < >
+#
+# Prerequisites:
+#   - Service account created in CockroachDB Cloud Console
+#   - Service account assigned Cluster Operator role
+#   - API key generated and stored securely
+#   - Prometheus metrics export ENABLED on the cluster (see docs/02-crdb-cloud-setup.md)
+
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+# Alertmanager connection
+# NOTE: Do NOT add path_prefix here for standalone Alertmanager deployments.
+# path_prefix is only for reverse proxy / Kubernetes setups.
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:9093
+
+# Alert rule files — add new category files here as you expand coverage
+rule_files:
+  - "rules/cpu_utilization.yml"
+  - "rules/sql_performance.yml"
+  - "rules/storage.yml"
+  - "rules/changefeed.yml"
+  - "rules/connection.yml"
+
+scrape_configs:
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # CockroachDB Cloud Standard / Advanced — single region
+  # Duplicate this block for each additional region
+  - job_name: '<YOUR_JOB_NAME>'                    # e.g. crdb-cloud-prod-us-central1
+    metrics_path: '/api/v1/clusters/<YOUR_CLUSTER_ID>/metricexport/prometheus/<YOUR_REGION>/scrape'
+    static_configs:
+      - targets: ['cockroachlabs.cloud']
+        labels:
+          crdb_cluster: '<YOUR_CLUSTER_NAME>'       # e.g. my-cluster-1234
+          env: '<YOUR_ENV>'                         # e.g. production
+    scheme: 'https'
+    authorization:
+      # Option A — inline (development only)
+      credentials: '<YOUR_API_KEY>'
+
+      # Option B — file (recommended for production)
+      # credentials_file: '/path/to/secrets/crdb_api_key.txt'

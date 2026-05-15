@@ -1,0 +1,42 @@
+# Changefeed Alert Rules
+# Covers: lag, failures, retries, backfill
+
+groups:
+  - name: crdb_cloud_changefeed
+    rules:
+
+      - alert: CRDBCloudChangefeedFailing
+        expr: increase(crdb_cloud_changefeed_failures_total[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: cockroachdb-cloud
+        annotations:
+          summary: "Changefeed failure on {{ $labels.cluster }}"
+          description: >
+            {{ $value }} changefeed failure(s) in last 10 minutes on
+            {{ $labels.cluster }}.
+
+      - alert: CRDBCloudChangefeedHighLag
+        expr: crdb_cloud_changefeed_max_behind_nanos / 1e9 > 600
+        for: 5m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "Changefeed lag > 10 minutes on {{ $labels.cluster }}"
+          description: >
+            Changefeed on {{ $labels.cluster }} is
+            {{ humanizeDuration ($value) }} behind.
+
+      - alert: CRDBCloudChangefeedHighRetries
+        expr: rate(crdb_cloud_changefeed_error_retries_total[10m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "High changefeed retry rate on {{ $labels.cluster }}"
+          description: >
+            Changefeed is retrying at {{ printf "%.2f" $value }}/sec on
+            {{ $labels.cluster }}.

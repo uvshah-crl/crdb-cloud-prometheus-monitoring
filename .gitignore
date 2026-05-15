@@ -1,0 +1,15 @@
+# Prometheus data
+data/
+*.tar.gz
+
+# Secrets — never commit
+secrets/
+*.key
+*api_key*
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/

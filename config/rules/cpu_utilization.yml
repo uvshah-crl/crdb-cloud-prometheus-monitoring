@@ -1,0 +1,47 @@
+# CPU Utilization Alert Rules
+# Metric: crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total (counter)
+# Metric: crdb_cloud_tenant_sql_usage_provisioned_vcpus (gauge)
+#
+# Formula: rate(cpu_seconds[5m]) / provisioned_vcpus * 100 = % CPU utilized
+
+groups:
+  - name: crdb_cloud_cpu
+    rules:
+
+      - alert: CRDBCloudHighCPUUtilization
+        expr: >
+          (
+            rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+            / on(cluster, region, organization)
+            (crdb_cloud_tenant_sql_usage_provisioned_vcpus > 0)
+            * 100
+          ) > 70
+        for: 5m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "High CPU utilization on {{ $labels.cluster }}"
+          description: >
+            Cluster {{ $labels.cluster }} ({{ $labels.region }}) is using
+            {{ printf "%.1f" $value }}% of provisioned CPU.
+            Threshold: 70% for 5 minutes.
+
+      - alert: CRDBCloudCriticalCPUUtilization
+        expr: >
+          (
+            rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+            / on(cluster, region, organization)
+            (crdb_cloud_tenant_sql_usage_provisioned_vcpus > 0)
+            * 100
+          ) > 90
+        for: 2m
+        labels:
+          severity: critical
+          component: cockroachdb-cloud
+        annotations:
+          summary: "Critical CPU utilization on {{ $labels.cluster }}"
+          description: >
+            Cluster {{ $labels.cluster }} ({{ $labels.region }}) is using
+            {{ printf "%.1f" $value }}% of provisioned CPU.
+            Threshold: 90% for 2 minutes.

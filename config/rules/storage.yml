@@ -1,0 +1,31 @@
+# Storage Alert Rules
+# Covers: storage bytes, backup schedule health
+
+groups:
+  - name: crdb_cloud_storage
+    rules:
+
+      - alert: CRDBCloudBackupFailing
+        expr: increase(crdb_cloud_schedules_backup_failed_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          component: cockroachdb-cloud
+        annotations:
+          summary: "Backup failure detected on {{ $labels.cluster }}"
+          description: >
+            {{ $value }} backup failure(s) in the last hour on
+            {{ $labels.cluster }}. Investigate immediately.
+
+      - alert: CRDBCloudBackupNotCompleting
+        expr: >
+          (time() - crdb_cloud_schedules_backup_last_completed_time) > 90000
+        for: 0m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "Backup not completed in 25 hours on {{ $labels.cluster }}"
+          description: >
+            Last successful backup on {{ $labels.cluster }} was
+            {{ humanizeDuration $value }} ago. Expected at least daily.

@@ -1,0 +1,62 @@
+# SQL Performance Alert Rules
+# Covers: query latency, error rate, active statements, open transactions
+
+groups:
+  - name: crdb_cloud_sql_performance
+    rules:
+
+      - alert: CRDBCloudHighSQLErrorRate
+        expr: >
+          (
+            rate(crdb_cloud_sql_failure_count_total[5m])
+            / rate(crdb_cloud_sql_query_count_total[5m])
+            * 100
+          ) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "High SQL error rate on {{ $labels.cluster }}"
+          description: >
+            SQL error rate is {{ printf "%.2f" $value }}% on
+            {{ $labels.cluster }}. Threshold: 5% for 5 minutes.
+
+      - alert: CRDBCloudHighP99SQLLatency
+        expr: >
+          histogram_quantile(0.99,
+            rate(crdb_cloud_sql_service_latency_bucket[5m])
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "High P99 SQL latency on {{ $labels.cluster }}"
+          description: >
+            P99 SQL service latency is {{ printf "%.3f" $value }}s on
+            {{ $labels.cluster }}. Threshold: 1s for 5 minutes.
+
+      - alert: CRDBCloudHighOpenTransactions
+        expr: crdb_cloud_sql_txns_open > 500
+        for: 5m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "High open transaction count on {{ $labels.cluster }}"
+          description: >
+            {{ $value }} transactions are open on {{ $labels.cluster }}.
+            May indicate lock contention or slow clients.
+
+      - alert: CRDBCloudHighFullScanRate
+        expr: rate(crdb_cloud_sql_full_scan_count_total[5m]) > 10
+        for: 10m
+        labels:
+          severity: warning
+          component: cockroachdb-cloud
+        annotations:
+          summary: "High full table scan rate on {{ $labels.cluster }}"
+          description: >
+            {{ printf "%.1f" $value }} full scans/sec on {{ $labels.cluster }}.
+            Review missing indexes or query plans.

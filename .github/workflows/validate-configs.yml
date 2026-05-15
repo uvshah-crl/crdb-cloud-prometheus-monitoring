@@ -1,0 +1,41 @@
+name: Validate Configs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Prometheus tools
+        run: |
+          PROM_VERSION="2.52.0"
+          wget -q https://github.com/prometheus/prometheus/releases/download/v${PROM_VERSION}/prometheus-${PROM_VERSION}.linux-amd64.tar.gz
+          tar xf prometheus-${PROM_VERSION}.linux-amd64.tar.gz
+          sudo cp prometheus-${PROM_VERSION}.linux-amd64/prometheus /usr/local/bin/
+          sudo cp prometheus-${PROM_VERSION}.linux-amd64/promtool /usr/local/bin/
+
+      - name: Install Alertmanager tools
+        run: |
+          AM_VERSION="0.27.0"
+          wget -q https://github.com/prometheus/alertmanager/releases/download/v${AM_VERSION}/alertmanager-${AM_VERSION}.linux-amd64.tar.gz
+          tar xf alertmanager-${AM_VERSION}.linux-amd64.tar.gz
+          sudo cp alertmanager-${AM_VERSION}.linux-amd64/amtool /usr/local/bin/
+
+      - name: Validate prometheus.yml
+        run: promtool check config config/prometheus.yml
+
+      - name: Validate alert rules
+        run: |
+          for f in config/rules/*.yml; do
+            echo "Checking $f..."
+            promtool check rules "$f"
+          done
+
+      - name: Validate alertmanager.yml
+        run: amtool check-config config/alertmanager.yml

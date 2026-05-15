@@ -1,0 +1,65 @@
+# CockroachDB Cloud — Alertmanager Configuration
+# Uncomment and configure ONE receiver section below.
+# For testing, use the webhook receiver with scripts/test-webhook.py
+
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'cluster']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default'
+
+  # Route critical alerts separately (e.g. to PagerDuty)
+  routes:
+    - matchers:
+        - severity="critical"
+      receiver: 'critical'
+
+# ── RECEIVERS ──────────────────────────────────────────────────────────────────
+
+receivers:
+
+  # --- Testing (local webhook) ---
+  - name: 'default'
+    webhook_configs:
+      - url: 'http://127.0.0.1:5001/'
+        send_resolved: true
+
+  - name: 'critical'
+    webhook_configs:
+      - url: 'http://127.0.0.1:5001/'
+        send_resolved: true
+
+  # --- Slack (uncomment to use) ---
+  # - name: 'slack-warnings'
+  #   slack_configs:
+  #     - api_url: '<YOUR_SLACK_WEBHOOK_URL>'
+  #       channel: '#crdb-alerts'
+  #       title: '[{{ .Status | toUpper }}] {{ .CommonAnnotations.summary }}'
+  #       text: '{{ .CommonAnnotations.description }}'
+  #       send_resolved: true
+
+  # --- Email (uncomment to use) ---
+  # - name: 'email'
+  #   email_configs:
+  #     - to: '<YOUR_EMAIL>'
+  #       from: '<SENDER_EMAIL>'
+  #       smarthost: 'smtp.gmail.com:587'
+  #       auth_username: '<SENDER_EMAIL>'
+  #       auth_password: '<APP_PASSWORD>'
+  #       send_resolved: true
+
+  # --- PagerDuty (uncomment to use) ---
+  # - name: 'pagerduty'
+  #   pagerduty_configs:
+  #     - routing_key: '<YOUR_PAGERDUTY_ROUTING_KEY>'
+  #       send_resolved: true
+
+# Suppress warning alerts when a critical for the same cluster is already firing
+inhibit_rules:
+  - source_matchers: [severity="critical"]
+    target_matchers: [severity="warning"]
+    equal: ['cluster']

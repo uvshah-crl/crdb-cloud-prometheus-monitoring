@@ -338,12 +338,14 @@ grep url ~/prometheus/alertmanager/alertmanager.yml
 {"code": 7, "message": "unauthorized"}
 ```
 
-**Cause:** The service account does not have sufficient permissions. The following roles are **not enough** to enable metrics export:
+**Cause:** The service account used for the POST does not have sufficient permissions. The following roles are **not enough** for the enable operation (POST):
 
 - Metrics Viewer
 - Cluster Monitor
 
-**Fix:** Assign **Cluster Operator** (minimum) or **Cluster Admin** role to the service account in the Cloud Console. See **[02 — CockroachDB Cloud Setup](02-crdb-cloud-setup.md)**.
+**Fix:** Use a service account with **Cluster Operator** (minimum) or **Cluster Admin** role for the one-time POST to enable the pipeline.
+
+**Note:** Metrics Viewer is sufficient for the ongoing scrape endpoint (`GET /metricexport/prometheus/{region}/scrape`). Use a separate Metrics Viewer service account for Prometheus's `credentials_file`. See the two-service-account pattern in **[02 — CockroachDB Cloud Setup](02-crdb-cloud-setup.md)**.
 
 ### Metric name not found — `estimated_cpu_seconds`
 
@@ -409,6 +411,6 @@ rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
 | Alerts firing but not in Alertmanager | `path_prefix` mismatch | Remove `path_prefix` from `alerting` block |
 | `activeAlertmanagers` empty | Missing `alerting` block | Add `alerting` block to `prometheus.yml` |
 | Webhook not receiving | `group_wait` not elapsed | Wait 30s after alert fires |
-| `unauthorized` on metrics export POST | Wrong service account role | Assign **Cluster Operator** role |
+| `unauthorized` on metrics export POST | Service account lacks Cluster Operator role | Use Cluster Operator for POST; Metrics Viewer is sufficient for GET scrape |
 | PromQL division empty | Label mismatch | Add `on(cluster, region, organization)` |
 | Metric not found | Wrong metric name | Use `crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total` |

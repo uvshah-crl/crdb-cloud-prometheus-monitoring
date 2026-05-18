@@ -97,6 +97,8 @@ scrape_configs:
           crdb_cluster: '<YOUR_CLUSTER_NAME>'
           env: '<YOUR_ENV>'
     authorization:
+      # Metrics Viewer role is sufficient for ongoing scraping.
+      # See docs/02-crdb-cloud-setup.md for the two-service-account setup.
       credentials_file: '/Users/<YOUR_USERNAME>/prometheus/secrets/crdb_api_key.txt'
 ```
 

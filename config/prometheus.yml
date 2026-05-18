@@ -2,9 +2,10 @@
 # Replace all values marked with < >
 #
 # Prerequisites:
-#   - Service account created in CockroachDB Cloud Console
-#   - Service account assigned Cluster Operator role
-#   - API key generated and stored securely
+#   - Two service accounts created in CockroachDB Cloud Console:
+#     1. prometheus-setup (Cluster Operator) — for one-time enable POST
+#     2. prometheus-scraper (Metrics Viewer) — for ongoing scraping
+#   - API key from prometheus-scraper stored securely
 #   - Prometheus metrics export ENABLED on the cluster (see docs/02-crdb-cloud-setup.md)
 
 global:
@@ -46,8 +47,13 @@ scrape_configs:
           env: '<YOUR_ENV>'                         # e.g. production
     scheme: 'https'
     authorization:
-      # Option A — inline (development only)
-      credentials: '<YOUR_API_KEY>'
+      # Service account must have Metrics Viewer role (minimum).
+      # Cluster Operator is only needed to enable the export pipeline
+      # (one-time POST) — not for ongoing scraping.
+      # See docs/02-crdb-cloud-setup.md for the two-service-account pattern.
 
-      # Option B — file (recommended for production)
-      # credentials_file: '/path/to/secrets/crdb_api_key.txt'
+      # Option A — file (recommended)
+      credentials_file: '/path/to/secrets/crdb_api_key.txt'
+
+      # Option B — inline (development only, never commit)
+      # credentials: '<YOUR_METRICS_VIEWER_API_KEY>'

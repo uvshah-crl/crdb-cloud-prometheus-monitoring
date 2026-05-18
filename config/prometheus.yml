@@ -52,8 +52,8 @@ scrape_configs:
       # (one-time POST) — not for ongoing scraping.
       # See docs/02-crdb-cloud-setup.md for the two-service-account pattern.
 
-      # Option A — file (recommended)
-      credentials_file: '/path/to/secrets/crdb_api_key.txt'
+      # Option A — inline (for initial setup, replace before production)
+      credentials: '<YOUR_METRICS_VIEWER_API_KEY>'
 
-      # Option B — inline (development only, never commit)
-      # credentials: '<YOUR_METRICS_VIEWER_API_KEY>'
+      # Option B — file (recommended for production)
+      # credentials_file: '/path/to/secrets/crdb_api_key.txt'

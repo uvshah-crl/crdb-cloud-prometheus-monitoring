@@ -1,5 +1,7 @@
 # CockroachDB Cloud — Prometheus Monitoring & Alerting
 
+![Validate Configs](https://github.com/uvshah-crl/crdb-cloud-prometheus-monitoring/workflows/Validate%20Configs/badge.svg)
+
 A replicable, extensible monitoring and alerting setup for **CockroachDB Standard and Advanced** clusters using Prometheus and Alertmanager.
 
 Built and maintained by Cockroach Labs Enterprise Architecture.

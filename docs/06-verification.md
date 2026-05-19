@@ -119,7 +119,7 @@ curl -s 'http://localhost:9090/api/v1/query?query=crdb_cloud_sql_conns' \
   | python3 -m json.tool | grep value
 
 # Query count rate
-curl -s 'http://localhost:9090/api/v1/query?query=rate(crdb_cloud_sql_query_count_total[5m])' \
+curl -s 'http://localhost:9090/api/v1/query?query=rate(crdb_cloud_sql_query_count_total[1m])' \
   | python3 -m json.tool | grep value
 ```
 

@@ -378,7 +378,7 @@ curl -s http://localhost:9090/api/v1/label/__name__/values \
 # Run each metric individually and compare label sets
 # In the Prometheus query browser (http://localhost:9090/query):
 
-rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[1m])
 # Note the labels: {cluster="...", region="...", organization="..."}
 
 crdb_cloud_tenant_sql_usage_provisioned_vcpus
@@ -390,7 +390,7 @@ If the label sets differ, the `on()` clause needs to list only the labels that m
 **Fix:**
 
 ```promql
-rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[1m])
 / on(cluster, region, organization)
 (crdb_cloud_tenant_sql_usage_provisioned_vcpus > 0)
 * 100

@@ -113,16 +113,16 @@ This is the primary rule built for CockroachDB Cloud clusters. Understanding it 
 A counter's raw value is cumulative — dividing it by vCPUs gives an ever-growing number, not a percentage. `rate()` converts it to a per-second rate over a time window, which makes it meaningful:
 
 ```promql
-rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[1m])
 ```
 
-This returns: **CPU seconds consumed per second**, averaged over 5 minutes.
+This returns: **CPU seconds consumed per second**, averaged over 1 minute.
 
 ### The Full Formula
 
 ```promql
 (
-  rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+  rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[1m])
   / on(cluster, region, organization)
   (crdb_cloud_tenant_sql_usage_provisioned_vcpus > 0)
   * 100
@@ -133,7 +133,7 @@ Breaking it down:
 
 | Part | Purpose |
 |---|---|
-| `rate(...[5m])` | Converts counter to per-second rate over 5 min window |
+| `rate(...[1m])` | Converts counter to per-second rate over 1 min window |
 | `/ on(cluster, region, organization)` | Match the two metrics only on these shared labels |
 | `(... > 0)` | Guard against division by zero if vCPUs is 0 |
 | `* 100` | Convert to percentage |
@@ -292,7 +292,7 @@ To confirm an alert fires and reaches Alertmanager without waiting for a real th
    ```yaml
    expr: >
      (
-       rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+       rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[1m])
        / on(cluster, region, organization)
        (crdb_cloud_tenant_sql_usage_provisioned_vcpus > 0)
        * 100

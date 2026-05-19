@@ -85,16 +85,12 @@ This setup uses two service accounts following the principle of least privilege:
 
 ⚠️ **This step is critical.** The wrong role will cause the metrics export enablement to return `unauthorized`.
 
-| Role | Enable export (POST) | Scrape metrics (GET) | Assign to |
+| Role | Enable export (POST) | Scrape metrics (GET) | Used for |
 |---|---|---|---|
-| Metrics Viewer | ❌ | ✅ | `prometheus-scraper` |
-| Cluster Monitor | ❌ | ✅ | — |
-| Cluster Operator | ✅ | ✅ | `prometheus-setup` |
-| Cluster Admin | ✅ | ✅ | — |
+| Metrics Viewer | ❌ | ✅ | `prometheus-scraper` (ongoing) |
+| Cluster Operator | ✅ | ✅ | `prometheus-setup` (one-time) |
 
-> **Verified:** Metrics Viewer is sufficient for the ongoing scrape endpoint
-> (`GET /metricexport/prometheus/{region}/scrape`). Cluster Operator is only
-> required for the one-time enable operation (`POST /metricexport/prometheus`).
+> **Note:** Cluster Admin can also enable export, but Cluster Operator follows least-privilege principles. Cluster Monitor can scrape but cannot enable export—we use Metrics Viewer as it provides the same scraping permissions with a clearer name.
 
 **Assign Cluster Operator to `prometheus-setup`:**
 
@@ -256,13 +252,6 @@ You will need these in **03 — Prometheus Setup**:
 
 ---
 
-## Completion Checklist
+## Next Steps
 
-```
-□ Two service accounts created: prometheus-setup and prometheus-scraper
-□ Cluster Operator role assigned to prometheus-setup
-□ Metrics Viewer role assigned to prometheus-scraper
-□ SETUP_KEY generated for prometheus-setup (for the enable POST)
-□ Scraper API key generated and stored in ~/prometheus/secrets/crdb_api_key.txt
-□ Scrape endpoint confirmed with Metrics Viewer key (not setup key)
-```
+Continue to **[03 — Prometheus Setup](03-prometheus-setup.md)** to configure Prometheus to scrape your cluster.

@@ -222,7 +222,7 @@ curl -s http://localhost:9090/api/v1/label/__name__/values \
   | wc -l
 ```
 
-A healthy Standard cluster scrape returns approximately **100+ metrics**.
+A healthy cluster scrape returns approximately **100+ metrics**.
 
 ---
 

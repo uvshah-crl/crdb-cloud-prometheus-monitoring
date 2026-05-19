@@ -66,6 +66,8 @@ CockroachDB Cloud Cluster
 - Prometheus 2.52.0 (darwin/arm64, linux/amd64)
 - Alertmanager 0.27.0
 
+**Note:** This setup works for both Standard and Advanced clusters via the `/metricexport/prometheus` API. Advanced clusters with private network connectivity (VPC peering, AWS PrivateLink, GCP Private Service Connect) can additionally scrape `/_status/vars` directly from individual nodes for more granular metrics (not covered in this repo).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)

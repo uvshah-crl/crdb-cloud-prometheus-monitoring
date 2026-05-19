@@ -7,9 +7,15 @@ scrape endpoint that your local Prometheus can pull metrics from.
 
 ## Overview
 
-CockroachDB Cloud Standard and Advanced clusters do not expose `/_status/vars`
-directly. Instead, metrics are accessed through the Cloud API via a managed
+CockroachDB Cloud clusters expose metrics through the Cloud API via a managed
 scrape endpoint. Access requires a **service account** with an **API key**.
+
+**Note on Advanced clusters:** Advanced clusters with private network connectivity
+(VPC peering, AWS PrivateLink, or GCP Private Service Connect) can also scrape
+`/_status/vars` directly from individual nodes on port 8080. This provides 200+
+raw CockroachDB metrics with lower latency. This setup is not covered in this
+repo, which focuses on the `/metricexport/prometheus` API that works for both
+Standard and Advanced clusters.
 
 The setup follows these steps:
 

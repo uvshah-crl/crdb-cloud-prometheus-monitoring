@@ -94,7 +94,7 @@ annotations:
 
 ## Understanding the CPU Utilization Rule
 
-This is the primary rule built for CockroachDB Cloud Standard clusters. Understanding it fully helps you write your own rules.
+This is the primary rule built for CockroachDB Cloud clusters. Understanding it fully helps you write your own rules.
 
 ### The Two Metrics
 

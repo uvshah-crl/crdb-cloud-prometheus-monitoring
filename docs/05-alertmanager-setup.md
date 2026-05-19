@@ -85,9 +85,8 @@ global:
 ```yaml
 route:
   group_by: ['alertname', 'cluster']  # group alerts sharing these label values
-  group_wait: 30s        # wait 30s after first alert before sending
-                         # allows related alerts to arrive and be grouped
-  group_interval: 5m     # wait 5m before sending new alerts in an existing group
+  group_wait: 0s         # send immediately — no wait for grouping
+  group_interval: 30s    # wait 30s before sending new alerts in an existing group
   repeat_interval: 4h    # resend if still firing after 4h
   receiver: 'default'    # fallback receiver for all alerts
 

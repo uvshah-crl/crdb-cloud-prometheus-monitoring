@@ -154,50 +154,50 @@ To diagnose label mismatch, run each metric individually in the Prometheus query
 
 Located in `config/rules/cpu_utilization.yml`.
 
-### Warning — 70% for 5 minutes
+### Warning — 70% for 2 minutes
 
 ```yaml
 - alert: CRDBCloudHighCPUUtilization
   expr: >
     (
-      rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+      rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[1m])
       / on(cluster, region, organization)
       (crdb_cloud_tenant_sql_usage_provisioned_vcpus > 0)
       * 100
     ) > 70
-  for: 5m
+  for: 2m
   labels:
     severity: warning
 ```
 
-**Fires when:** CPU utilization exceeds 70% continuously for 5 minutes.
+**Fires when:** CPU utilization exceeds 70% continuously for 2 minutes. Using a 1m rate window for faster spike detection.
 
-### Critical — 90% for 2 minutes
+### Critical — 90% — fires immediately
 
 ```yaml
 - alert: CRDBCloudCriticalCPUUtilization
   expr: >
     (
-      rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[5m])
+      rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[1m])
       / on(cluster, region, organization)
       (crdb_cloud_tenant_sql_usage_provisioned_vcpus > 0)
       * 100
     ) > 90
-  for: 2m
+  for: 0m
   labels:
     severity: critical
 ```
 
-**Fires when:** CPU utilization exceeds 90% continuously for 2 minutes. Shorter `for` duration because at 90% the situation is urgent.
+**Fires when:** CPU utilization exceeds 90% on the first evaluation — no wait. `for: 0m` means Prometheus fires immediately without requiring the condition to hold for any duration. Used here because 90% CPU is severe enough that any occurrence warrants immediate action.
 
 ### Threshold Guidance
 
 | Threshold | Rationale |
 |---|---|
-| 70% warning | Early signal — time to investigate before impact |
-| 90% critical | Approaching saturation — user impact likely |
+| 70% for 2m warning | Early signal — investigate before user impact |
+| 90% immediate critical | Severe saturation — fire without delay |
 
-CockroachDB Cloud's own built-in alerting fires at 80% sustained for 60 minutes. These rules are more sensitive — firing earlier and faster.
+CockroachDB Cloud's own built-in alerting fires at 80% sustained for 60 minutes. These rules are significantly more sensitive — 1m rate window, firing at 70%/2m and 90%/immediate.
 
 ---
 

@@ -5,6 +5,51 @@ grouping, deduplication, and delivery to notification receivers.
 
 ---
 
+## TL;DR
+
+**For experienced users** — essential setup commands:
+
+```bash
+# Create working directory
+mkdir -p ~/prometheus/alertmanager/data
+
+# Copy config
+cp config/alertmanager.yml ~/prometheus/alertmanager/alertmanager.yml
+
+# Edit alertmanager.yml - configure receiver
+nano ~/prometheus/alertmanager/alertmanager.yml
+# - For testing: webhook receiver (default) - no changes needed
+# - For production: uncomment Slack/Email/PagerDuty receiver and add credentials
+
+# Validate config
+amtool check-config ~/prometheus/alertmanager/alertmanager.yml
+
+# Start webhook receiver (for testing)
+python3 scripts/test-webhook.py &
+
+# Start Alertmanager
+./scripts/start-alertmanager.sh
+# Or manually: alertmanager --config.file=$HOME/prometheus/alertmanager/alertmanager.yml \
+#                           --storage.path=$HOME/prometheus/alertmanager/data
+
+# Verify Prometheus connection
+curl -s http://localhost:9090/api/v1/alertmanagers | python3 -m json.tool
+# Expected: "activeAlertmanagers" with http://localhost:9093/api/v2/alerts
+
+# Send test alert
+curl --request POST http://localhost:9093/api/v2/alerts \
+  --header "Content-Type: application/json" \
+  --data '[{"labels":{"alertname":"TestAlert","severity":"warning"},"annotations":{"summary":"Test"}}]'
+
+# Verify alert appears
+curl -s http://localhost:9093/api/v2/alerts | python3 -m json.tool
+# Check webhook receiver output for delivery
+```
+
+**First-time setup or need details?** Follow the step-by-step guide below.
+
+---
+
 ## Prerequisites
 
 - Alertmanager and amtool installed ([01 — Prerequisites](01-prerequisites.md))

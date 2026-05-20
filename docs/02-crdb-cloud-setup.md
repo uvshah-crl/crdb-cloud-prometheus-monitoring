@@ -5,6 +5,52 @@ scrape endpoint that your local Prometheus can pull metrics from.
 
 ---
 
+## TL;DR
+
+**For experienced users** — essential setup commands:
+
+```bash
+# Get cluster ID from Cloud Console URL or API
+export CLUSTER_ID="f78b7feb-b6cf-4396-9d7f-494982d7d81e"
+
+# Create two service accounts in Cloud Console:
+# - prometheus-setup (Cluster Operator) - for one-time enable POST
+# - prometheus-scraper (Metrics Viewer) - for ongoing scraping
+
+# Generate API keys for both, then:
+export SETUP_KEY="CCDB1_..."  # Cluster Operator key
+mkdir -p ~/prometheus/secrets
+echo -n "CCDB1_..." > ~/prometheus/secrets/crdb_api_key.txt  # Metrics Viewer key
+chmod 600 ~/prometheus/secrets/crdb_api_key.txt
+
+# Enable metrics export (use SETUP_KEY)
+curl --request POST \
+  --url "https://cockroachlabs.cloud/api/v1/clusters/${CLUSTER_ID}/metricexport/prometheus" \
+  --header "Authorization: Bearer ${SETUP_KEY}"
+
+# Wait for ENABLED status
+curl --request GET \
+  --url "https://cockroachlabs.cloud/api/v1/clusters/${CLUSTER_ID}/metricexport/prometheus" \
+  --header "Authorization: Bearer ${SETUP_KEY}" \
+  | python3 -m json.tool | grep status
+# Expected: "status": "ENABLED"
+
+# Test scrape endpoint (use Metrics Viewer key from file)
+export REGION="us-central1"  # change to match your cluster
+export API_KEY=$(cat ~/prometheus/secrets/crdb_api_key.txt)
+curl --request GET \
+  --url "https://cockroachlabs.cloud/api/v1/clusters/${CLUSTER_ID}/metricexport/prometheus/${REGION}/scrape" \
+  --header "Authorization: Bearer ${API_KEY}" \
+  | head -20
+# Expected: Prometheus-formatted metrics
+
+# After success: revoke SETUP_KEY in Cloud Console (no longer needed)
+```
+
+**First-time setup or need details?** Follow the step-by-step guide below.
+
+---
+
 ## Overview
 
 CockroachDB Cloud clusters expose metrics through the Cloud API via a managed

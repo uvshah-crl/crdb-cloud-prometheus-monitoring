@@ -5,6 +5,53 @@ in this repo, and shows how to add your own.
 
 ---
 
+## TL;DR
+
+**For experienced users** — adding a new CPU alert rule example:
+
+```bash
+# Edit the CPU rules file
+nano ~/prometheus/rules/cpu_utilization.yml
+
+# Add a new rule to the rules list (example: sustained moderate CPU):
+#
+#   - alert: CRDBCloudSustainedModerateCPU
+#     expr: >
+#       (
+#         rate(crdb_cloud_tenant_sql_usage_estimated_cpu_seconds_total[1m])
+#         / on(cluster, region, organization)
+#         (crdb_cloud_tenant_sql_usage_provisioned_vcpus > 0)
+#         * 100
+#       ) > 60
+#     for: 10m
+#     labels:
+#       severity: warning
+#       component: cockroachdb-cloud
+#     annotations:
+#       summary: "Sustained moderate CPU on {{ $labels.cluster }}"
+#       description: >
+#         Cluster {{ $labels.cluster }} ({{ $labels.region }}) has been using
+#         {{ printf "%.1f" $value }}% CPU for 10+ minutes.
+
+# Validate the rule file
+promtool check rules ~/prometheus/rules/cpu_utilization.yml
+
+# Reload Prometheus (no restart needed)
+kill -HUP $(pgrep prometheus)
+
+# Verify rule loaded
+curl -s http://localhost:9090/api/v1/rules \
+  | python3 -m json.tool \
+  | grep -A 2 "CRDBCloudSustainedModerateCPU"
+
+# Watch rule state at http://localhost:9090/alerts
+# To test: temporarily lower threshold to > 0, wait for firing, then revert
+```
+
+**Want to understand how rules work?** Read the detailed explanation below.
+
+---
+
 ## Prerequisites
 
 - Prometheus running and scraping your cluster ([03 — Prometheus Setup](03-prometheus-setup.md))

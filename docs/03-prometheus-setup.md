@@ -5,6 +5,50 @@ CockroachDB Cloud cluster and evaluate alert rules.
 
 ---
 
+## TL;DR
+
+**For experienced users** — essential setup commands:
+
+```bash
+# Copy config and rules
+cp config/prometheus.yml ~/prometheus/prometheus.yml
+cp -r config/rules ~/prometheus/
+
+# Edit prometheus.yml - replace placeholders
+nano ~/prometheus/prometheus.yml
+# - <YOUR_JOB_NAME>: e.g., crdb-prod-us-central1
+# - <YOUR_CLUSTER_ID>: from docs/02-crdb-cloud-setup.md Step 1
+# - <YOUR_REGION>: e.g., us-central1
+# - <YOUR_CLUSTER_NAME>: e.g., my-cluster
+# - Uncomment credentials_file line, comment out inline credentials
+
+# Validate config
+promtool check config ~/prometheus/prometheus.yml
+promtool check rules ~/prometheus/rules/*.yml
+
+# Start Prometheus
+./scripts/start-prometheus.sh
+# Or manually: prometheus --config.file=$HOME/prometheus/prometheus.yml \
+#                         --storage.tsdb.path=$HOME/prometheus/data
+
+# Verify targets UP
+curl -s http://localhost:9090/api/v1/targets | python3 -m json.tool | grep health
+# Expected: "health": "up"
+
+# Verify metrics flowing
+curl -s http://localhost:9090/api/v1/label/__name__/values \
+  | python3 -m json.tool | grep crdb_cloud | wc -l
+# Expected: 100+
+
+# Verify rules loaded
+curl -s http://localhost:9090/api/v1/rules | python3 -m json.tool | grep '"name"'
+# Expected: crdb_cloud_cpu, crdb_cloud_sql_performance, etc.
+```
+
+**First-time setup or need details?** Follow the step-by-step guide below.
+
+---
+
 ## Prerequisites
 
 - Prometheus and promtool installed ([01 — Prerequisites](01-prerequisites.md))
